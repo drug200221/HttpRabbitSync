@@ -1,39 +1,55 @@
-﻿
-class Program
+﻿using System.Text;
+using System.Xml.Linq;
+using HttpClient = System.Net.Http.HttpClient;
+
+namespace CheckerHttpEvents;
+
+static class Program
 {
-    static async Task Main(string[] args)
+    static async Task Main()
     {
-        string? protocol = "";
-        string? host = "";
-        string? port = "";
-        string? login = "";
-        string? password = "";
+        RabbitMqProducer rabbitMqProducer = new();
+        string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "url.config");
         
-        (protocol, host, port, login, password) = await SetAuth();
-        
-        string url = $"{protocol}://{host}:{port}/event?login={login}&password={password}&filter=427f1cc3-2c2f-4f50-8865-56ae99c3610d&responsetype=json";
+        IsFileExists(filePath);
 
-        while (true)
+        string url = GetUrlFromConfig(filePath)!;
+        
+        using (HttpClient client = new HttpClient())
         {
-            using (HttpClient client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Connection.Add("keep-alive");
+            client.DefaultRequestHeaders.Connection.Add("keep-alive");
+            int maxAttempts = 5;
+            int attempt = 0;
 
+
+            while (attempt < maxAttempts)
+            {
                 try
                 {
+                    attempt++;
                     using (HttpResponseMessage response =
                            await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
                     {
                         response.EnsureSuccessStatusCode();
 
-                        using (var contentStream = await response.Content.ReadAsStreamAsync())
+                        await using (var contentStream = await response.Content.ReadAsStreamAsync())
                         {
                             using (var reader = new System.IO.StreamReader(contentStream))
                             {
+                                string message = "";
                                 while (!reader.EndOfStream)
                                 {
                                     string? line = await reader.ReadLineAsync();
                                     Console.WriteLine(line);
+                                    if (line != "}")
+                                    {
+                                        message += line + "\n";
+                                    }
+                                    else
+                                    {
+                                        message += line + "\r";
+                                        message = "";
+                                    }
                                 }
                             }
                         }
@@ -42,85 +58,45 @@ class Program
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Произошла ошибка: {ex.Message}");
-                    Console.ReadLine();
+                    Console.WriteLine($"Попытка {attempt} из {maxAttempts}");
+                    
+                    if (attempt >= maxAttempts)
+                    {
+                        Console.WriteLine("Достигнуто максимальное количество попыток. Прекращение работы.");
+                    }
+                    else
+                    {
+                        await Task.Delay(5000);
+                    }
                 }
             }
         }
     }
 
-    private static async Task<(string? protocol, string? host, string? port, string? login, string? password)> SetAuth()
+    private static void IsFileExists(string filePath)
     {
-        string? protocol;
-        string? host;
-        string? port;
-        string? login;
-        string? password;
-        
-        while (true)
+        if (!File.Exists(filePath))
         {
-            Console.Write("Подключение по http|https (0|1): ");
-            int k = Console.ReadKey().KeyChar;
-            Console.WriteLine();
-            if (k == 48)
-            {
-                protocol = "http";
-                Console.WriteLine(protocol);
-                break;
-            } 
-            if (k == 49)
-            {
-                protocol = "https";
-                Console.WriteLine(protocol);
-                break;
-            }
+            var xmlContent = new XElement("Config",
+                new XComment("Измените {параметры} на данные для подключения"),
+                new XElement("ConnectionUrl",
+                    "{protocol}://{host}:{port}/event?login={login}&password={password}&filter=427f1cc3-2c2f-4f50-8865-56ae99c3610d&responsetype=json")
+            );
+
+            xmlContent.Save(filePath);
         }
-        
-        Console.Write("Укажите хост: ");
-        host = Console.ReadLine();
-        while (host == "")
+    }
+
+    private static string? GetUrlFromConfig(string filePath)
+    {
+        if (File.Exists(filePath))
         {
-            Console.Write("Хост не указан. Укажите хост: ");
-            host = Console.ReadLine();
-        }
-        Console.Write("Укажите порт: ");
-        port = Console.ReadLine();
-        while (port == "")
-        {
-            Console.Write("Порт не указан. Укажите порт: ");
-            port = Console.ReadLine();
+            XDocument xmlDoc = XDocument.Load(filePath);
+            
+            var urlElement = xmlDoc.Root!.Element("ConnectionUrl");
+            return urlElement?.Value;
         }
 
-        using (HttpClient client = new HttpClient())
-        {
-            client.Timeout = TimeSpan.FromSeconds(5);
-            Console.WriteLine("Ожидаю 5 сек.");
-            try
-            {
-                using (var response =
-                       await client.GetAsync($"{protocol}://{host}:{port}", HttpCompletionOption.ResponseHeadersRead))
-                {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        Console.WriteLine("Есть контакт!");
-                    }
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                Console.WriteLine("Ошибка: Запрос превысил время ожидания. Возможно не верно указан хост и/или порт.");
-            }
-        }
-
-        Console.Write("Укажите логин: ");
-        login = Console.ReadLine();
-        while (login == "")
-        {
-            Console.Write("Логин не указан. Укажите логин: ");
-            login = Console.ReadLine();
-        }
-        Console.Write("Укажите пароль: ");
-        password = Console.ReadLine();
-        
-        return (protocol, host, port, login, password);
+        throw new FileNotFoundException("Файл конфигурации не найден.", filePath);
     }
 }
