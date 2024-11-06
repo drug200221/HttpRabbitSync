@@ -40,7 +40,6 @@ static class Program
                                 while (!reader.EndOfStream)
                                 {
                                     string? line = await reader.ReadLineAsync();
-                                    Console.WriteLine(line);
                                     if (line != "}")
                                     {
                                         message += line + "\n";
@@ -48,6 +47,7 @@ static class Program
                                     else
                                     {
                                         message += line + "\r";
+                                        await rabbitMqProducer.SendMessageAsync(message);
                                         message = "";
                                     }
                                 }
