@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.Text.Json.Nodes;
 using System.Xml.Linq;
 using HttpClient = System.Net.Http.HttpClient;
 
@@ -47,7 +47,15 @@ static class Program
                                     else
                                     {
                                         message += line + "\r";
-                                        await rabbitMqProducer.SendMessageAsync(message);
+                                        var jsonObject = JsonNode.Parse(message);
+                                        if (jsonObject!["InitiatorName"]?.ToString() == "System")
+                                        {
+                                            Console.WriteLine(message);
+                                        }
+                                        else
+                                        {
+                                            await rabbitMqProducer.SendMessageAsync(message);
+                                        }
                                         message = "";
                                     }
                                 }
