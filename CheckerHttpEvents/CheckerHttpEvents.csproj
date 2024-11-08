@@ -12,4 +12,7 @@
       <PackageReference Include="RabbitMQ.Client" Version="7.0.0" />
     </ItemGroup>
 
+    <Target Name="CreateUrlConfig" AfterTargets="Build">
+        <Copy SourceFiles="url.config.template" DestinationFiles="$(OutputPath)url.config" Condition="!Exists('$(OutputPath)url.config')" />
+    </Target>
 </Project>

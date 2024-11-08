@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Config>
+<!--Измените {параметры} на данные для подключения-->
+<ConnectionUrl>{protocol}://{host}:{port}/event?login={login}&amp;password={password}&amp;filter={filter}&amp;responsetype=json</ConnectionUrl>
+</Config>

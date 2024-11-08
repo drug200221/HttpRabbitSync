@@ -21,7 +21,6 @@ static class Program
             int maxAttempts = 5;
             int attempt = 0;
 
-
             while (attempt < maxAttempts)
             {
                 try
@@ -85,13 +84,15 @@ static class Program
     {
         if (!File.Exists(filePath))
         {
+            Console.WriteLine("Файл url.config не был найден. Создаю...");
             var xmlContent = new XElement("Config",
                 new XComment("Измените {параметры} на данные для подключения"),
                 new XElement("ConnectionUrl",
-                    "{protocol}://{host}:{port}/event?login={login}&password={password}&filter=427f1cc3-2c2f-4f50-8865-56ae99c3610d&responsetype=json")
+                    "{protocol}://{host}:{port}/event?login={login}&password={password}&filter={filter}d&responsetype=json")
             );
 
             xmlContent.Save(filePath);
+            Console.WriteLine("Файл url.config создан! Измените его.");
         }
     }
 
