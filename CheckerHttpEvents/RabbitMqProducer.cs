@@ -12,15 +12,14 @@ public class RabbitMqProducer
         var factory = new ConnectionFactory()
         {
             HostName = "localhost",
-            Port = 5673,
-            UserName = "guest",
-            Password = "guest"
+            Port = 5673
         };
 
         await using var connection = await factory.CreateConnectionAsync();
         await using var channel = await connection.CreateChannelAsync();
             
-        await channel.QueueDeclareAsync(queue: QueueName,
+        await channel.QueueDeclareAsync(
+            queue: QueueName,
             durable: true,
             exclusive: false,
             autoDelete: false,

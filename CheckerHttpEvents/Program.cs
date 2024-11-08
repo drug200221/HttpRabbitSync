@@ -8,7 +8,7 @@ static class Program
 {
     static async Task Main()
     {
-        RabbitMqProducer rabbitMqProducer = new();
+        RabbitMqProducer producer = new();
         string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "url.config");
         
         IsFileExists(filePath);
@@ -18,14 +18,11 @@ static class Program
         using (HttpClient client = new HttpClient())
         {
             client.DefaultRequestHeaders.Connection.Add("keep-alive");
-            int maxAttempts = 5;
-            int attempt = 0;
 
-            while (attempt < maxAttempts)
+            while (true)
             {
                 try
                 {
-                    attempt++;
                     using (HttpResponseMessage response =
                            await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
                     {
@@ -33,7 +30,7 @@ static class Program
 
                         await using (var contentStream = await response.Content.ReadAsStreamAsync())
                         {
-                            using (var reader = new System.IO.StreamReader(contentStream))
+                            using (var reader = new StreamReader(contentStream))
                             {
                                 string message = "";
                                 while (!reader.EndOfStream)
@@ -53,7 +50,8 @@ static class Program
                                         }
                                         else
                                         {
-                                            await rabbitMqProducer.SendMessageAsync(message);
+                                            await producer.SendMessageAsync(message);
+                                            Console.WriteLine(message);
                                         }
                                         message = "";
                                     }
@@ -65,16 +63,6 @@ static class Program
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Произошла ошибка: {ex.Message}");
-                    Console.WriteLine($"Попытка {attempt} из {maxAttempts}");
-                    
-                    if (attempt >= maxAttempts)
-                    {
-                        Console.WriteLine("Достигнуто максимальное количество попыток. Прекращение работы.");
-                    }
-                    else
-                    {
-                        await Task.Delay(5000);
-                    }
                 }
             }
         }
