@@ -1,70 +1,87 @@
-﻿using System.Text.Json.Nodes;
-using System.Xml.Linq;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
 using HttpClient = System.Net.Http.HttpClient;
+using System.Text;
 
 namespace CheckerHttpEvents;
 
-static class Program
+public static class Program
 {
-    static async Task Main()
+    private static readonly string FilePath = GlobalVariable.FilePath;
+    private static readonly RabbitMqProducer Producer = new();
+    public static async Task Main()
     {
-        RabbitMqProducer producer = new();
-        string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "url.config");
-        
-        IsFileExists(filePath);
+        IsFileExists(FilePath);
 
-        string url = GetUrlFromConfig(filePath)!;
+        string url = GetUrlFromConfig(FilePath) ?? throw new InvalidOperationException("URL не может быть пустым.");
         
         using (HttpClient client = new HttpClient())
         {
             client.DefaultRequestHeaders.Connection.Add("keep-alive");
-
+           
             while (true)
             {
                 try
                 {
-                    using (HttpResponseMessage response =
-                           await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
-                    {
-                        response.EnsureSuccessStatusCode();
-
-                        await using (var contentStream = await response.Content.ReadAsStreamAsync())
-                        {
-                            using (var reader = new StreamReader(contentStream))
-                            {
-                                string message = "";
-                                while (!reader.EndOfStream)
-                                {
-                                    string? line = await reader.ReadLineAsync();
-                                    if (line != "}")
-                                    {
-                                        message += line + "\n";
-                                    }
-                                    else
-                                    {
-                                        message += line + "\r";
-                                        var jsonObject = JsonNode.Parse(message);
-                                        if (jsonObject!["InitiatorName"]?.ToString() == "System")
-                                        {
-                                            Console.WriteLine(message);
-                                        }
-                                        else
-                                        {
-                                            await producer.SendMessageAsync(message);
-                                            Console.WriteLine(message);
-                                        }
-                                        message = "";
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    await ProcessHttpResponse(client, url, Producer);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Произошла ошибка: {ex.Message}");
+                    await Task.Delay(7000);
                 }
             }
+        }
+    }
+    
+    private static async Task ProcessHttpResponse(HttpClient client, string url, RabbitMqProducer producer)
+    {
+        using (HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
+        {
+            response.EnsureSuccessStatusCode();
+
+            await using (var contentStream = await response.Content.ReadAsStreamAsync())
+            using (var reader = new StreamReader(contentStream))
+            {
+                StringBuilder messageBuilder = new StringBuilder();
+                string? line;
+
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    if (line != "}")
+                    {
+                        messageBuilder.AppendLine(line);
+                    }
+                    else
+                    {
+                        messageBuilder.AppendLine(line);
+                        await ProcessMessage(messageBuilder.ToString().TrimEnd('\r', '\n'), producer);
+                        messageBuilder.Clear();
+                    }
+                }
+            }
+        }
+    }
+
+    private static async Task ProcessMessage(string message, RabbitMqProducer producer)
+    {
+        try
+        {
+            var jsonObject = JsonNode.Parse(message);
+            if (jsonObject?["InitiatorName"]?.ToString() == "System")
+            {
+                Console.WriteLine(message);
+            }
+            else
+            {
+                await producer.SendMessageAsync(message);
+                Console.WriteLine(message);
+            }
+        }
+        catch (JsonException jsonEx)
+        {
+            Console.WriteLine($"Ошибка парсинга JSON: {jsonEx.Message}");
         }
     }
 
@@ -72,26 +89,55 @@ static class Program
     {
         if (!File.Exists(filePath))
         {
-            Console.WriteLine("Файл url.config не был найден. Создаю...");
-            var xmlContent = new XElement("Config",
-                new XComment("Измените {параметры} на данные для подключения"),
-                new XElement("ConnectionUrl",
-                    "{protocol}://{host}:{port}/event?login={login}&password={password}&filter={filter}d&responsetype=json")
-            );
+            Console.WriteLine("Файл app.config.json не был найден. Создаю...");
 
-            xmlContent.Save(filePath);
-            Console.WriteLine("Файл url.config создан! Измените его.");
+            var config = GetBaseConfig();
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var jsonString = JsonSerializer.Serialize(config, options);
+            File.WriteAllText(filePath, jsonString);
+            
+            Console.WriteLine("Файл app.config.json создан! Измените его.");
         }
+    }
+
+    private static object GetBaseConfig()
+    {
+        return new
+        {
+            Config = new
+            {
+                ConnectionUrl = "{protocol}://{address}:{port}/event?login={login}&password={password}&filter={filter}&responsetype=json",
+                Branches = new[]
+                {
+                    new
+                    {
+                        id = "",
+                        name = "Перевоз",
+                        Dormitories = new[]
+                        {
+                            new
+                            {
+                                id = "",
+                                name = "Общежитие 1",
+                                Cameras = new[]
+                                {
+                                    new { type = "EntranceCamera", id = "" },
+                                    new { type = "ExitCamera", id = "" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
     }
 
     private static string? GetUrlFromConfig(string filePath)
     {
         if (File.Exists(filePath))
         {
-            XDocument xmlDoc = XDocument.Load(filePath);
-            
-            var urlElement = xmlDoc.Root!.Element("ConnectionUrl");
-            return urlElement?.Value;
+            var jsonNode = JsonNode.Parse(File.ReadAllText(filePath));
+            return jsonNode?["Config"]?["ConnectionUrl"]?.ToString();
         }
 
         throw new FileNotFoundException("Файл конфигурации не найден.", filePath);

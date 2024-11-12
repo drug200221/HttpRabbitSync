@@ -6,16 +6,11 @@ namespace CheckerHttpEvents;
 public class RabbitMqProducer
 {
     private const string QueueName = "facesCompleteEventsQueue";
+    private readonly ConnectionFactory _factory = GlobalVariable.ConnectionFactory;
 
     public async Task SendMessageAsync(string message)
     {
-        var factory = new ConnectionFactory()
-        {
-            HostName = "localhost",
-            Port = 5673
-        };
-
-        await using var connection = await factory.CreateConnectionAsync();
+        await using var connection = await _factory.CreateConnectionAsync();
         await using var channel = await connection.CreateChannelAsync();
             
         await channel.QueueDeclareAsync(

@@ -7,12 +7,28 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <OutputPath>bin\Debug/</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <OutputPath>bin\Release/</OutputPath>
+    </PropertyGroup>
+
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="RabbitMQ.Client" Version="7.0.0" />
     </ItemGroup>
 
     <Target Name="CreateUrlConfig" AfterTargets="Build">
-        <Copy SourceFiles="url.config.template" DestinationFiles="$(OutputPath)url.config" Condition="!Exists('$(OutputPath)url.config')" />
+        <Copy SourceFiles="app.config.template" DestinationFiles="$(OutputPath)app.config.json" Condition="!Exists('$(OutputPath)app.config.json')" />
     </Target>
+
+    <Target Name="CopyDocumentation" AfterTargets="Build">
+        <Copy SourceFiles="..\Documentation\2024-11-12_09-38.png" DestinationFolder="$(OutputPath)Documentation\" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="..\Documentation\Screenshot_1.png" DestinationFolder="$(OutputPath)Documentation\" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="..\Documentation\Screenshot_2.png" DestinationFolder="$(OutputPath)Documentation\" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="..\README.md" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    </Target>
+
 </Project>
