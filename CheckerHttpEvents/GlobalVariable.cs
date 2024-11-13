@@ -8,7 +8,7 @@ public static class GlobalVariable
     
     public static readonly ConnectionFactory ConnectionFactory = new ()
     {
-        HostName = "localhost",
+        HostName = "rabbitmq",
         Port = 5673,
         UserName = "rabbitmq",
         Password = "secretRabbitMQ"

@@ -15,7 +15,22 @@ services:
 
   message-updater:
     build:
-        context: .
-        dockerfile: ./MessageUpdater/Dockerfile
+      context: .
+      dockerfile: ./MessageUpdater/Dockerfile
     image: message-updater:latest
     restart: always
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./development/config/app.config.json:/app/app.config.json
+
+  checker-http-events:
+    build:
+      context: .
+      dockerfile: ./CheckerHttpEvents/Dockerfile
+    image: checker-http-events:latest
+    restart: always
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./development/config/app.config.json:/app/app.config.json

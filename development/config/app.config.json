@@ -1,0 +1,27 @@
+{
+  "Config": {
+    "ConnectionUrl": "http://192.168.2.43:8080/event?login=root&password=&responsetype=json",
+    "Branches": [
+      {
+        "id": "",
+        "name": "Перевоз",
+        "Dormitories": [
+          {
+            "id": "",
+            "name": "Общежитие 1",
+            "Cameras": [
+              {
+                "type": "EntranceCamera",
+                "id": "cc12228c-77c8-425e-a884-880172af394a"
+              },
+              {
+                "type": "ExitCamera",
+                "id": "408881fb-0f21-42b5-85e2-0a378c35c461"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

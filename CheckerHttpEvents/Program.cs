@@ -5,11 +5,11 @@ using System.Text;
 
 namespace CheckerHttpEvents;
 
-public static class Program
+static class Program
 {
     private static readonly string FilePath = GlobalVariable.FilePath;
     private static readonly RabbitMqProducer Producer = new();
-    public static async Task Main()
+    static async Task Main()
     {
         IsFileExists(FilePath);
 
@@ -18,7 +18,7 @@ public static class Program
         using (HttpClient client = new HttpClient())
         {
             client.DefaultRequestHeaders.Connection.Add("keep-alive");
-           
+
             while (true)
             {
                 try
