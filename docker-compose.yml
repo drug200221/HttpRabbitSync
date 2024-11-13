@@ -13,3 +13,9 @@ services:
     ports:
       - 15672:15672
       - 5673:5672
+
+  messageupdater:
+    build:
+        context: ./MessageUpdater
+    image: messageupdater:latest
+    restart: always

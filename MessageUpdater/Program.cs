@@ -8,8 +8,10 @@ static class Program
     private static readonly RabbitMqConsumer Consumer = new ();
     static async Task Main()
     {
-        await CheckerHttpEvents.Program.Main();
-        await Consumer.StartConsumingAsync(GetAllCameras(JsonNode.Parse(await File.ReadAllTextAsync(GlobalVariable.FilePath))));
+        await Task.WhenAll(
+            CheckerHttpEvents.Program.Main(), 
+            Consumer.StartConsumingAsync(GetAllCameras(JsonNode.Parse(await File.ReadAllTextAsync(GlobalVariable.FilePath))))
+            );
     }
     
     static List<(string type, string id)> GetAllCameras(JsonNode? jsonNode)
