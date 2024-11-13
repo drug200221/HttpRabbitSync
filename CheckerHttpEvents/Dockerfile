@@ -7,7 +7,8 @@ RUN dotnet restore ./CheckerHttpEvents/CheckerHttpEvents.csproj
 COPY ./CheckerHttpEvents/. ./CheckerHttpEvents/
 COPY ./Documentation ./Documentation
 COPY ./README.md .
-RUN dotnet publish ./CheckerHttpEvents/CheckerHttpEvents.csproj -c Release -o /app/publish
+
+RUN dotnet publish ./CheckerHttpEvents/CheckerHttpEvents.csproj -c Debug -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app

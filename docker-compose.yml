@@ -9,20 +9,10 @@ services:
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
     volumes:
       - ./development/rabbitmq:/var/lib/rabbitmq
+      - ./development/config/rabbitmq.config:/etc/rabbitmq/rabbitmq.config
     ports:
+      - 5672:5672
       - 15672:15672
-      - 5673:5672
-
-  message-updater:
-    build:
-      context: .
-      dockerfile: ./MessageUpdater/Dockerfile
-    image: message-updater:latest
-    restart: always
-    depends_on:
-      - rabbitmq
-    volumes:
-      - ./development/config/app.config.json:/app/app.config.json
 
   checker-http-events:
     build:
@@ -32,5 +22,17 @@ services:
     restart: always
     depends_on:
       - rabbitmq
+    volumes:
+      - ./development/config/app.config.json:/app/app.config.json
+
+  message-updater:
+    build:
+      context: .
+      dockerfile: ./MessageUpdater/Dockerfile
+    image: message-updater:latest
+    restart: always
+    depends_on:
+      - rabbitmq
+      - checker-http-events
     volumes:
       - ./development/config/app.config.json:/app/app.config.json

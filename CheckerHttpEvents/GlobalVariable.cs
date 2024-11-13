@@ -9,7 +9,7 @@ public static class GlobalVariable
     public static readonly ConnectionFactory ConnectionFactory = new ()
     {
         HostName = "rabbitmq",
-        Port = 5673,
+        Port = 5672,
         UserName = "rabbitmq",
         Password = "secretRabbitMQ"
     };
