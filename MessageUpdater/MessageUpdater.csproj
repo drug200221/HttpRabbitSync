@@ -25,12 +25,4 @@
       <ProjectReference Include="..\CheckerHttpEvents\CheckerHttpEvents.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="DotNetEnv" Version="3.1.1" />
-    </ItemGroup>
-
-    <Target Name="CopyEnv" AfterTargets="Build">
-        <Copy SourceFiles="..\.env" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
-    </Target>
-
 </Project>
