@@ -1,6 +1,6 @@
 {
     "Config": {
-        "ConnectionUrl": "{protocol}://{address}:{port}/event?login={login}&password={password}&filter={filter}&responsetype=json",
+        "ConnectionUrl": "http://192.168.2.43:8080/event?login=root&password=&filter=427f1cc3-2c2f-4f50-8865-56ae99c3610d&responsetype=json",
         "Branches": [
             {
                 "name": "Перевоз",
@@ -10,11 +10,11 @@
                         "Cameras": [
                             {
                                 "type": "EntranceCamera",
-                                "id": ""
+                                "id": "cc12228c-77c8-425e-a884-880172af394a"
                             },
                             {
                                 "type": "ExitCamera",
-                                "id": ""
+                                "id": "408881fb-0f21-42b5-85e2-0a378c35c461"
                             }
                         ]
                     }

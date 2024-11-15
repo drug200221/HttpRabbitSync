@@ -1,3 +1,4 @@
+using DotNetEnv;
 using RabbitMQ.Client;
 
 namespace CheckerHttpEvents;
@@ -8,9 +9,9 @@ public static class GlobalVariable
     
     public static readonly ConnectionFactory ConnectionFactory = new ()
     {
-        HostName = "rabbitmq",
-        Port = 5672,
-        UserName = "rabbitmq",
-        Password = "secretRabbitMQ"
+        HostName = Env.GetString("RABBITMQ_HOSTNAME"),
+        Port = (Env.GetInt("RABBITMQ_PORT")),
+        UserName = Env.GetString("RABBITMQ_DEFAULT_USER"),
+        Password = Env.GetString("RABBITMQ_DEFAULT_PASS")
     };
 }

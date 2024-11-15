@@ -3,6 +3,7 @@ WORKDIR /app
 
 COPY ./CheckerHttpEvents/CheckerHttpEvents.csproj ./CheckerHttpEvents/
 COPY ./MessageUpdater/MessageUpdater.csproj ./MessageUpdater/
+COPY ./.env ./
 
 RUN dotnet restore ./MessageUpdater/MessageUpdater.csproj
 RUN dotnet restore ./CheckerHttpEvents/CheckerHttpEvents.csproj
@@ -12,11 +13,13 @@ COPY ./CheckerHttpEvents/. ./CheckerHttpEvents/
 COPY ./Documentation ./Documentation
 COPY ./README.md .
 
-RUN dotnet publish ./MessageUpdater/MessageUpdater.csproj -c Debug -o /app/publish
-RUN dotnet publish ./CheckerHttpEvents/CheckerHttpEvents.csproj -c Debug -o /app/publish
+RUN dotnet publish ./MessageUpdater/MessageUpdater.csproj -c Debug -o /app/publish && \
+    dotnet publish ./CheckerHttpEvents/CheckerHttpEvents.csproj -c Debug -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
 COPY --from=build-env /app/publish ./
+COPY --from=build-env /app/.env ./
+
 ENTRYPOINT ["dotnet", "MessageUpdater.dll"]

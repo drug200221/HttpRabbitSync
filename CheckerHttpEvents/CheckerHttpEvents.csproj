@@ -16,6 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="DotNetEnv" Version="3.1.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="RabbitMQ.Client" Version="7.0.0" />
     </ItemGroup>
@@ -29,6 +30,10 @@
         <Copy SourceFiles="..\Documentation\Screenshot_1.png" DestinationFolder="$(OutputPath)Documentation\" SkipUnchangedFiles="true" />
         <Copy SourceFiles="..\Documentation\Screenshot_2.png" DestinationFolder="$(OutputPath)Documentation\" SkipUnchangedFiles="true" />
         <Copy SourceFiles="..\README.md" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="CopyEnv" AfterTargets="Build">
+        <Copy SourceFiles="..\.env" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
     </Target>
 
 </Project>

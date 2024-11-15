@@ -63,7 +63,7 @@ namespace MessageUpdater
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("Error: " + ex.Message);
+                            Console.WriteLine("Ошибка: " + ex.Message);
                         }
                     };
 
@@ -73,7 +73,7 @@ namespace MessageUpdater
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Connection error: " + ex.Message);
+                    Console.WriteLine("Ошибка подключения: " + ex);
                     await Task.Delay(5000);
                 }
             }
@@ -94,7 +94,7 @@ namespace MessageUpdater
                 }
                 catch (HttpRequestException e)
                 {
-                    Console.WriteLine("Error: " + e);
+                    Console.WriteLine("Ошибка: " + e);
                 }
             }
         }
