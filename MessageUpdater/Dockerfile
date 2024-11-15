@@ -13,8 +13,8 @@ COPY ./CheckerHttpEvents/. ./CheckerHttpEvents/
 COPY ./Documentation ./Documentation
 COPY ./README.md .
 
-RUN dotnet publish ./MessageUpdater/MessageUpdater.csproj -c Debug -o /app/publish && \
-    dotnet publish ./CheckerHttpEvents/CheckerHttpEvents.csproj -c Debug -o /app/publish
+RUN dotnet publish ./MessageUpdater/MessageUpdater.csproj -c Release -o /app/publish && \
+    dotnet publish ./CheckerHttpEvents/CheckerHttpEvents.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
