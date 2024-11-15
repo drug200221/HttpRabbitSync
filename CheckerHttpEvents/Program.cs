@@ -110,13 +110,11 @@ static class Program
                 {
                     new
                     {
-                        id = "",
                         name = "Перевоз",
                         Dormitories = new[]
                         {
                             new
                             {
-                                id = "",
                                 name = "Общежитие 1",
                                 Cameras = new[]
                                 {

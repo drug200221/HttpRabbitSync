@@ -3,11 +3,9 @@
         "ConnectionUrl": "{protocol}://{address}:{port}/event?login={login}&password={password}&filter={filter}&responsetype=json",
         "Branches": [
             {
-                "id": "",
                 "name": "Перевоз",
                 "Dormitories": [
                     {
-                        "id": "",
                         "name": "Общежитие 1",
                         "Cameras": [
                             {
