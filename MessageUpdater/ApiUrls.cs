@@ -10,4 +10,13 @@ public static class ApiUrls
             return $"https://system.fgoupsk.ru/student/dormitories/api/v1/roomers/status/{externalId}";
         #endif
     }
+    
+    public static string LoginUrl()
+    {
+        #if DEBUG
+            return $"http://192.168.2.71:8080/student/login";
+        #else
+            return $"https://system.fgoupsk.ru/student/login";
+        #endif
+    }
 }
